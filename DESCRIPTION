@@ -1,0 +1,9 @@
+Package: hymodbluecat
+Type: Package
+Title: An R-package for the hydrological model HyMOD with parameter optimisation and uncertainty assessment with the BLUECAT method in calibration and validation
+Version: 0.1
+Date: 2021-08-23
+Author: Demetris Koutsoyiannis, Alberto Montanari
+Maintainer: Alberto Montanari <alberto.montanari@unibo.it>
+Description: A conceptual lumped rainfall-runoff model with uncertainty assessment
+License: GPL-3
