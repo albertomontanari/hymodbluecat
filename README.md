@@ -1,2 +1,2 @@
-# rainfall-runoff
-Codes working in the R environment to apply rainfall-runoff hydrological models
+# hymodbluecat
+Software working in the R environment for applying the HyMod rainfall-runoff model to simulate/predict river flow data. The software provides two routines: one for parameter calibration (hymod.par) and one for producing the simulation/prediction with uncertainty estimation (hymod.sim). Confidence limits for the prediction are estimated by applying the BLUECAT method that transforms any deterministic model in a stochastic model, from which mean sotchastic simulation and confidence limits are obtained.
