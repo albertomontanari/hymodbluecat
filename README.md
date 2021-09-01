@@ -37,6 +37,14 @@ To install the software in R under the Windows operating system first download a
 
 > library(hymodbluecat)
 
+Please note that the latest version of R may be needed, so beware of the warnings that you may get during installation.
+
+If you wish to reinstall the package, beware that you need to detach it first, with the instruction
+
+> detach("package:hymodbluecat", unload=TRUE)
+
+You may also need to restart R before reinstalling.
+
 The software comes with two data sets described in Koutsoyiannis and Montanari (2021). They refer to the Arno and Sieve River Basins, in Italy.
 To reproduce the case study of the Arno River basin as presented by Koutsoyiannis and Montanari (2021) the following R commands can be used:
 
