@@ -1,5 +1,7 @@
 # hymodbluecat
-Software working in the R environment for applying the HyMod rainfall-runoff model to simulate/predict river flow data. The software provides two routines: one for parameter calibration (hymod.par) and one for producing the simulation/prediction with uncertainty estimation (hymod.sim). Confidence limits for the prediction are estimated by applying the BLUECAT method that transforms any deterministic model in a stochastic model, from which mean sotchastic simulation and confidence limits are obtained.
+Software working in the R environment for applying the Bluecat uncertainty assessment method in conjunction with the HyMod rainfall-runoff model to simulate/predict river flow data. 
+For more details on Bluecat please see https://www.albertomontanari.it/bluecat. You can download there the preprint of the paper introducing Bluecat as well as video and powerpoint presentations.
+The software provides two routines: one for parameter calibration (hymod.par) and one for producing the simulation/prediction with uncertainty estimation (hymod.sim). Confidence limits for the prediction are estimated by applying the BLUECAT method that transforms any deterministic model in a stochastic model, from which mean sotchastic simulation and confidence limits are obtained.
 The following R libraries are needed to run the package:
 - devtools
 - DescTools
