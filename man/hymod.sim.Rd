@@ -6,7 +6,7 @@ Function to simulate/predict a river flow serie by applying the Hymod rainfall-r
 \description{
 The function calls a Fortran subroutine to make the computation of the simulated river flows and applies at each time step the BLUECAT method for uncertainty estimation. It requires the libraries "devtools", "DescTools" and "DEoptim" if the optimisation routine DEoptim is used (see below).}
 \usage{
-hymod.sim<-function(param,area,tdelta,e,p,resultcalib=NULL,nstep=length(p),qinitial=0,bluecat=F,predsmodel="avg",empquant=F,siglev=0.1,m=100,m1=80,paramd=c(0.1,1,10,NA),lowparamd=c(0.001,0.001,0.001,0),upparamd=c(1,5,20,NA),NSeff=F,qoss=NA,plot=F,cpptresh=0)}
+hymod.sim<-function(param,area,tdelta,e,p,resultcalib=NULL,nstep=length(p),qinitial=0,bluecat=F,predsmodel="avg",empquant=F,siglev=0.2,m=100,m1=80,paramd=c(0.1,1,10,NA),lowparamd=c(0.001,0.001,0.001,0),upparamd=c(1,5,20,NA),NSeff=F,qoss=NULL,plot=F,cpptresh=0)}
 
 \arguments{
 \item{param}{Vector of the 5 Hymod parameters Cmax, beta, alpha, ks, kq. It can be taken from the output from hymod.par}
@@ -51,7 +51,7 @@ If eff=F and bluecat=T a list with the following items is returned:
 
 \details{
 HyMod is a five-parameter conceptual rainfall-runoff model that was introduced by Boyle (2000). The model is based on the probability-distributed soil storage capacity principle introduced by Moore (1985).
-In HyMod, the rainfall-runoff process is represented through a nonlinear tank connected with three identical linear tanks in parallel representing the surface flow and a slow-flow tank representing groundwater flow. The model requires the optimization of five parameters: Cmax (the maximum storage capacity within the watershed), beta (the degree of spatial variability of the soil moisture capacity within the watershed), alpha (a factor for partitioning the flow between two series of tanks) and the two residence time parameters of quick-flow and slow-flow tanks, kq and ks respectively. The input data consist of precipitation and potential evapotranspiration at the given time scale.
+In HyMod, the rainfall-runoff process is represented through a nonlinear tank connected with three identical linear tanks in parallel representing one routing component and another single linear tank representing a second routing component. The model requires the optimization of five parameters: Cmax (the maximum storage capacity within the watershed), beta (the degree of spatial variability of the soil moisture capacity within the watershed), alpha (a factor for partitioning the flow between two series of tanks) and the two residence time parameters of quick-flow and slow-flow tanks, kq and ks respectively. The input data consist of precipitation and potential evapotranspiration at the given time scale.
 Uncertainty for the HyMod simulation is estimated by applying BLUECAT, "A Brisk Local Uncertainty Estimator for Hydrologic Simulations and Predictions", introduced by Koutsoyiannis and Montanari (2021). BLUECAT estimates the lower and upper confidence limits of the HyMod simulation for a given confidence level. Goodness of fit testing for BLUECAT is performed by plotting a scatterplot of observed river flow against the mean stochastic simulation obtained with BLUECAT along with the related confidence limits, by plotting the Coverage Probability Plot and computing the Prediction Technical Performance indexes as in Koutsoyiannis and Montanari (2021).}
 
 \author{Demetris Koutsoyiannis and Alberto Montanari, email: alberto.montanari@unibo.it.}
@@ -71,13 +71,12 @@ Nash, J. E., and Sutcliffe, J. V., (1970), River flow forecasting through concep
 data(arnosubbiano)
 
 ## Model parameterisation with hymod.par
-pr1=hymod.par(c(100,1,0.5,200,0.5),area=752,tdelta=86400,e=arnosubbiano[,3][1:7305],p=arnosubbiano[,2][1:7305],nstep=length(p[1:7305]),qoss=arnosubbiano[,4][1:7305],qinitial=15,lower=c(10,0.1,0.1,0.1,0.1),upper=c(800,10,0.9,1000,100),opt="DEoptim")
+pr1=hymod.par(c(100,1,0.5,200,0.5),area=752,tdelta=86400,e=arnosubbiano[,3][1:7305],p=arnosubbiano[,2][1:7305],nstep=length(arnosubbiano[,2][1:7305]),qoss=arnosubbiano[,4][1:7305],qinitial=15,lower=c(10,0.1,0.1,0.1,0.1),upper=c(800,10,0.9,1000,100),opt="DEoptim",lambdaln=0.0001)
 
 ## Run BLUECAT to perform simulation in calibration mode
-pr2=hymod.sim(pr1$par,area=752,tdelta=86400,e=arnosubbiano[,3][1:7305],p=arnosubbiano[,2][1:7305],qinitial=15,qoss=arnosubbiano[,4][1:7305],resultcalib=pr1,bluecat=T,empquant=F,plot=T)
-
+pr2=hymod.sim(pr1$optim$bestmem,area=752,tdelta=86400,e=arnosubbiano[,3][1:7305],p=arnosubbiano[,2][1:7305],qinitial=15,qoss=arnosubbiano[,4][1:7305],resultcalib=pr1,bluecat=T,empquant=F,plot=T,m=100,predsmodel="mdn")
 ## Run BLUECAT to perform simulation in validation mode
-pr3=hymod.sim(pr1$par,area=752,tdelta=86400,e=arnosubbiano[,3][7306:8036],p=arnosubbiano[,2][7306:8036],qinitial=15,qoss=arnosubbiano[,4][7306:8036],resultcalib=pr1,bluecat=T,empquant=F,plot=T)
+pr3=hymod.sim(pr1$optim$bestmem,area=752,tdelta=86400,e=arnosubbiano[,3][7306:8036],p=arnosubbiano[,2][7306:8036],qinitial=15,qoss=arnosubbiano[,4][7306:8036],resultcalib=pr1,bluecat=T,empquant=F,plot=T,m=100,predsmodel="mdn")
 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

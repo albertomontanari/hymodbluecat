@@ -6,7 +6,7 @@ Function to fit the parameter set of the Hymod rainfall-runoff model (Boyle, 200
 \description{
 It calls a Fortran subroutine to make the actual computation of the simulated river flows. It requires the libraries "devtools", "DescTools" and "DEoptim" if the optimisation routine DEoptim is used (see below).}
 \usage{
-hymod.par(param.ini,area,tdelta,e,p,qoss,nstep=length(p),qinitial=0,lower=c(10,0.1,0,1,1),upper=c(400,10,0.9,1000,1000),itermax=100,control=list(factr=1e1,fnscale=0.01,parscale=c(100,1,1,1,1)),opt="DEoptim",plot=T))}
+hymod.par(param.ini,area,tdelta,e,p,qoss,nstep=length(p),qinitial=0,lower=c(10,0.1,0,1,1),upper=c(400,10,0.9,1000,1000),itermax=100,control=list(factr=1e1,fnscale=0.01,parscale=c(100,1,1,1,1)),opt="DEoptim",lambdaln=0,plot=T)}
 
 \arguments{
 \item{param.ini}{Vector of the initial value for the 5 Hymod parameters Cmax, beta, alpha, ks, kq. Suitable values may be Cmax=200 mm, beta=0.5, alpha=0.5, ks=Tc where Tc is the time of concentration of the catchment (expressed in number of simulation time steps) and kq=Tc/2.}
@@ -22,6 +22,7 @@ hymod.par(param.ini,area,tdelta,e,p,qoss,nstep=length(p),qinitial=0,lower=c(10,0
 \item{itermax}{Maximum number of trials allowed during optimisation. It used only by DEoptim (see below). Default is 100.}
 \item{control}{Control parameters used by DEoptim. See the help of DEoptim for additional details.}
 \item{opt}{Specifies the optimisation routine to be used. Allowed options are "DEoptim" and "optim" for the DEoptim routine (requires the library DEoptim) and the optim routine (available in R-base), respectively. See the related helps for additional details. Default is "DEoptim".}
+\item{lambdaln}{Specifies if parameter optimisation should be performed by optimising the Nash efficiency (NSE, Nash and Sutcliffe, 1968) or the Nash efficiency computed on a logarithmic transform of observed and simulated data. lambdaln=0 means no transformation (the same result is obtained for lambdaln tending to infinity). For lambdaln tending to 0 the transformation approaches the logarithmic transform.}
 \item{plot}{Specifies if diagnostic is to be returned. If plot=T (the default) a scapperplot of observed versus optimally simulated river flows is returned along with the related Nash efficiency (Nash and Sutcliffe, 1968).}}
 
 \value{The output from DEoptim (or optim) is returned (see the related helps) along with these additional list items:
