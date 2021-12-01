@@ -1,7 +1,5 @@
 # hymodbluecat
-Software working in the R environment for applying the Bluecat uncertainty assessment method in conjunction with the HyMod rainfall-runoff model to simulate/predict river flow data. 
-For more details on Bluecat please see https://www.albertomontanari.it/bluecat. You can download there the preprint of the paper introducing Bluecat as well as video and powerpoint presentations.
-The software provides two routines: one for parameter calibration (hymod.par) and one for producing the simulation/prediction with uncertainty estimation (hymod.sim). Confidence limits for the prediction are estimated by applying the BLUECAT method that transforms any deterministic model in a stochastic model, from which mean sotchastic simulation and confidence limits are obtained.
+Software working in the R environment for applying the HyMod rainfall-runoff model to simulate/predict river flow data. The software provides two routines: one for parameter calibration (hymod.par) and one for producing the simulation/prediction with uncertainty estimation (hymod.sim). Confidence limits for the prediction are estimated by applying the BLUECAT method that transforms any deterministic model in a stochastic model, from which mean sotchastic simulation and confidence limits are obtained.
 The following R libraries are needed to run the package:
 - devtools
 - DescTools
@@ -52,13 +50,23 @@ To reproduce the case study of the Arno River basin as presented by Koutsoyianni
 
 > data(arnosubbiano)
 
-> pr1=hymod.par(c(100,1,0.5,200,0.5),area=752,tdelta=86400,e=arnosubbiano[,3][1:7305],p=arnosubbiano[,2][1:7305],nstep=length(arnosubbiano[,2][1:7305]),qoss=arnosubbiano[,4][1:7305],qinitial=15,lower=c(10,0.1,0.1,0.1,0.1),upper=c(800,10,0.9,1000,100),opt="DEoptim")
+> pr1=hymod.par(c(100,1,0.5,200,0.5),area=752,tdelta=86400,e=arnosubbiano[,3][1:7305],p=arnosubbiano[,2][1:7305],nstep=length(arnosubbiano[,2][1:7305]),qoss=arnosubbiano[,4][1:7305],qinitial=15,lower=c(10,0.1,0.1,0.1,0.1),upper=c(800,10,0.9,1000,100),opt="DEoptim",lambdaln=0.0001)
 
 Before moving forward it is advisable to check that optimization gave back reasonable parameter values.
 
-> pr2=hymod.sim(pr1$par,area=752,tdelta=86400,e=arnosubbiano[,3][1:7305],p=arnosubbiano[,2][1:7305],qinitial=15,qoss=arnosubbiano[,4][1:7305],resultcalib=pr1,bluecat=T,empquant=F,plot=T)
+> pr2=hymod.sim(pr1$optim$bestmem,area=752,tdelta=86400,e=arnosubbiano[,3][1:7305],p=arnosubbiano[,2][1:7305],qinitial=15,qoss=arnosubbiano[,4][1:7305],resultcalib=pr1,bluecat=T,empquant=F,plot=T,m=100,predsmodel="mdn")
 
-> pr3=hymod.sim(pr1$par,area=752,tdelta=86400,e=arnosubbiano[,3][7306:8036],p=arnosubbiano[,2][7306:8036],qinitial=15,qoss=arnosubbiano[,4][7306:8036],resultcalib=pr1,bluecat=T,empquant=F,plot=T)
+> pr3=hymod.sim(pr1$optim$bestmem,area=752,tdelta=86400,e=arnosubbiano[,3][7306:8036],p=arnosubbiano[,2][7306:8036],qinitial=15,qoss=arnosubbiano[,4][7306:8036],resultcalib=pr1,bluecat=T,empquant=F,plot=T,m=100,predsmodel="mdn")
+
+To reproduce the case study of the Sieve River basin as presented by Koutsoyiannis and Montanari (2021) the following R commands can be used:
+
+> data(sievefornacina)
+
+> pr10=hymod.par(c(100,1,0.5,200,0.5),area=846,tdelta=3600,sievefornacina[3648:26304,3],sievefornacina[3648:26304,2],nstep=length(sievefornacina[3648:26304,3]),sievefornacina[3648:26304,4],qinitial=10,lower=c(10,0.0,0.1,0.1,0.1),upper=c(800,10,0.9,1000,100),opt="DEoptim",lambdaln=0)
+
+> pr20=hymod.sim(pr10$optim$bestmem,area=846,tdelta=3600,e=sievefornacina[3648:26304,3],p=sievefornacina[3648:26304,2],qinitial=50,qoss=sievefornacina[3648:26304,4],resultcalib=pr10,bluecat=T,empquant=F,plot=T,predsmodel="mdn")
+
+> pr30=hymod.sim(pr10$optim$bestmem,area=846,tdelta=3600,e=sievefornacina[(26305+3648):43848,3],p=sievefornacina[(26305+3648):43848,2],qinitial=50,qoss=sievefornacina[(26305+3648):43848,4],resultcalib=pr10,bluecat=T,empquant=F,plot=T,predsmodel="mdn")
 
 A detailed explanation of the argument of the functions hymod.par and hymod.sim is given in the R help. To invoke it the following commands can be used:
 > ?hymod.par
@@ -66,5 +74,6 @@ A detailed explanation of the argument of the functions hymod.par and hymod.sim 
 > ?hymod.sim
 
 Please contact me if you would like additional help.
+
 
 
