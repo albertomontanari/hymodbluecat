@@ -53,11 +53,11 @@ double precision er1,er2,e(ntstep),p(ntstep),qinitial,qtquick(ntstep),qtslow(nts
 	   evapt(i)=(1.-(((cmax-c2)/(betap+ 1.))/(cmax/(betap+ 1.))))*e(i)
 	   w2=max(w2 - evapt(i),0.0)  
     
-!  Partition uquick and uslow into quick and slow flow component 
+!  Partition uquick and uslow into 2 separate flow components 
 	   uquick=alfa*(er2+er1)
 	   uslow=(1.- alfa)*(er2+er1)
 
-!  Route slow flow component with single linear reservoir (kslow)
+!  Route first flow component with single linear reservoir (kslow)
 ! The linear reservoir is resolved with the following relationship:
 ! w(t)=w(t-1)+p(t) - (w(t-1)+p(t))/k*Dt = w(t-1)+p(t) - (w(t-1)+p(t))/(k/Dt)
 ! If k is measured in units of Dt then Dt=1 and one obtains: 
@@ -72,7 +72,7 @@ double precision er1,er2,e(ntstep),p(ntstep),qinitial,qtquick(ntstep),qtslow(nts
 	   qslow=(1./kslow/(1. - 1./kslow))*wslow
 	   qslow=max(qslow,0.0) 
 	        
-! Quick flow # We repeat the above computation three times.
+! Second flow # We repeat the above computation three times.
 
  	   qquick=0.0
 	     do j=1,3
@@ -82,7 +82,7 @@ double precision er1,er2,e(ntstep),p(ntstep),qinitial,qtquick(ntstep),qtslow(nts
  	     end do
  	   qquick=max(qquick,0.0)
 	    
-!  Compute quick, slow and total flow for timestep
+!  Compute first, second and total flow for timestep
  	   qtslow(i)=qslow*fatconv
 	   qtquick(i)=qquick*fatconv
   	   qtot(i)=qtquick(i) + qtslow(i)
