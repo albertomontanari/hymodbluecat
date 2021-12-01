@@ -2,14 +2,14 @@
 ### Hymod calibration
 ################################################################
 
-hymod.par=function(param.ini,area,tdelta,e,p,nstep=length(p),qoss,qinitial=0,lower=c(10,0.1,0,1,1),upper=c(400,10,0.9,1000,1000),itermax=100,control=list(factr=1e1,fnscale=0.01,parscale=c(100,1,1,1,1)),opt="DEoptim",plot=T)
+hymod.par=function(param.ini,area,tdelta,e,p,nstep=length(p),qoss,qinitial=0,lower=c(10,0.1,0,1,1),upper=c(400,10,0.9,1000,1000),itermax=100,control=list(factr=1e1,fnscale=0.01,parscale=c(100,1,1,1,1)),opt="DEoptim",lambdaln=0,plot=T)
 {
 #Choose between DEoptim and optim
 if (opt=="DEoptim")
   {cat("Launching optimisation with R function DEoptim - please wait for calibration to be completed", fill=T)
-  pr1=DEoptim(hymod.eff,lower=lower,upper=upper,control = DEoptim.control(itermax=itermax),args=list(area=area,tdelta=tdelta,e=e,p=p,qoss=qoss,qinitial=qinitial,nstep=nstep))} else
+  pr1=DEoptim(hymod.eff,lower=lower,upper=upper,control = DEoptim.control(itermax=itermax),args=list(area=area,tdelta=tdelta,e=e,p=p,qoss=qoss,qinitial=qinitial,nstep=nstep,lambdaln=lambdaln))} else
   {cat("Launching optimisation with R function optim - please wait for calibration to be completed", fill=T)
-  pr1=optim(param.ini,hymod.eff,method="L-BFGS-B",lower=lower,upper=upper,control=control,args=list(area=area,tdelta=tdelta,e=e,p=p,qoss=qoss,qinitial=qinitial,nstep=nstep))}
+  pr1=optim(param.ini,hymod.eff,method="L-BFGS-B",lower=lower,upper=upper,control=control,args=list(area=area,tdelta=tdelta,e=e,p=p,qoss=qoss,qinitial=qinitial,nstep=nstep,lambdaln=lambdaln))}
 if (opt=="DEoptim")
   bpar=pr1$optim$bestmem else bpar=pr1$par
   qsim=hymod.sim(bpar,area,tdelta,e,p,qinitial=qinitial)
@@ -21,6 +21,7 @@ if (opt=="DEoptim")
   #Make scatterplot
   if (plot==T)
     {
+    if(is.null(dev.list())==F) dev.off()
     plot(pr1$qsim,pr1$qoss,xlim=c(0,max(cbind(pr1$qsim,pr1$qoss))),ylim=c(0,max(cbind(pr1$qsim,pr1$qoss))),xlab="Simulated data",ylab="Observed data",col="red")
     grid()
     abline(0,1,lwd=2)
@@ -45,6 +46,7 @@ p=args$p
 qoss=args$qoss
 qinitial=args$qinitial
 nstep=args$nstep
+lambdaln=args$lambdaln
 #Define qout
 qout<-rep(999,nstep)
 #Define eff
@@ -59,13 +61,17 @@ qsimf<-.Fortran("hymodfortran",
                     nstep=as.integer(nstep),
                     qinitial=as.double(qinitial),
                     evapt=as.double(p),
-                    qtslow=as.double(p),
-                    qtquick=as.double(p),
+                    qt2=as.double(p),
+                    qt1=as.double(p),
                     qtot=as.double(p),
                     PACKAGE="hymodbluecat")
 #Compute the efficiency                    
 qsimf$qtot[qsimf$qtot>(max(qoss)*2)]=max(qoss)*2
-eff=-1+sum((qsimf$qtot-qoss)^2)/sum((qoss-mean(qoss))^2)
+if(lambdaln==0)
+  eff=-1+sum((qsimf$qtot-qoss)^2)/sum((qoss-mean(qoss))^2) else {
+  tqsim=lambdaln*log(1+qsimf$qtot/lambdaln)
+  tqoss=lambdaln*log(1+qoss/lambdaln)
+  eff=-1+sum((tqsim-tqoss)^2)/sum((tqoss-mean(tqoss))^2)}
 return(eff)
 }
 
@@ -87,8 +93,8 @@ qsimf<-.Fortran("hymodfortran",
                     nstep=as.integer(nstep),
                     qinitial=as.double(qinitial),
                     evapt=as.double(p),
-                    qtslow=as.double(p),
-                    qtquick=as.double(p),
+                    qt2=as.double(p),
+                    qt1=as.double(p),
                     qtot=as.double(p),
                     PACKAGE="hymodbluecat")
 #Choose whether to run Bluecat uncertainty estimation. If yes, argument resultcalib must be provided
@@ -319,7 +325,6 @@ if(bluecat==T && plot==T && nstep1>20 && is.null(qoss)==F)
   #Plotting the diagnostic plots and scatterplot
   #Datapoints with observed flow lower than cpptresh are removed
   #Preparing data for D-model plot
-  sortdata=sort(resultcalib$qoss)
   sortdata=sort(qsimf$qtot[qoss>cpptresh])
   sortdata1=sort(medpred[qoss>cpptresh])
   zQ=rep(0,101)
@@ -350,12 +355,12 @@ if(bluecat==T && plot==T && nstep1>20 && is.null(qoss)==F)
   legend(0,1,inset=0,legend=c("D-model", "S-model"),col=c("black", "red"),cex=1.2,pch=c(1,19))
   abline(0,1)  
   grid()
-  title("Predictive cumulative distribution plot")
+  title("Combined probability-probability plot")
   # Second plot
   plot(sort(zeta[zeta!=0]),ppoints(zeta[zeta!=0]),ylim=c(0,1),xlim=c(0,1),type="b",xlab="z",ylab=expression('F'[z]*'(z)')) 
   abline(0,1)  
   grid()
-  title("Combined probability-probability plot")
+  title("Predictive probability-probability plot")
   aux4=sort(medpred,index.return=T)$ix
   #sortmedpred contains the data simulated by stochastic model in ascending order
   sortmedpred=sort(medpred)
@@ -407,20 +412,20 @@ if(NSeff==T)
   if(is.null(qoss)==F) 
     {
     eff=1-sum((medpred-qoss)^2)/sum((qoss-mean(qoss))^2)
-    return(list(q_slow=qsimf$qtslow,q_quick=qsimf$qtquick,q_tot=qsimf$qtot,medpred=medpred,infpred=infpred,suppred=suppred,effsmodel=eff))
+    return(list(q_2=qsimf$qt2,q_1=qsimf$qt1,q_tot=qsimf$qtot,medpred=medpred,infpred=infpred,suppred=suppred,effsmodel=eff))
     } else
     {
-    return(list(q_slow=qsimf$qtslow,q_quick=qsimf$qtquick,q_tot=qsimf$qtot,medpred=medpred,infpred=infpred,suppred=suppred))
+    return(list(q_2=qsimf$qt2,q_1=qsimf$qt1,q_tot=qsimf$qtot,medpred=medpred,infpred=infpred,suppred=suppred))
     }
   }
   else
     {if(is.null(qoss)==F)
       {
       eff1=1-sum((qsimf$qtot-qoss)^2)/sum((qoss-mean(qoss))^2)
-      return(list(q_slow=qsimf$qtslow,q_quick=qsimf$qtquick,q_tot=qsimf$qtot,effdmodel=eff1))
+      return(list(q_2=qsimf$qt2,q_1=qsimf$qt1,q_tot=qsimf$qtot,effdmodel=eff1))
       } else
       {
-      return(list(q_slow=qsimf$qtslow,q_quick=qsimf$qtquick,q_tot=qsimf$qtot))
+      return(list(q_2=qsimf$qt2,q_1=qsimf$qt1,q_tot=qsimf$qtot))
       }
     }
 }
