@@ -30,7 +30,7 @@ Then, hymodbluecat is installed into R with the command:
 
 > library(hymodbluecat)
 
-To install the software in R under the Windows operating system first download and install Rtools from http://cran.r-project.org/bin/windows/Rtools/) and then:
+To install the software in R under the Windows operating system first download and install Rtools from http://cran.r-project.org/bin/windows/Rtools/ (make sure you carefully follow the steps for installation) and then:
 
 > install.packages("devtools")
 
