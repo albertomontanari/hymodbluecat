@@ -15,11 +15,16 @@ They can be installed in R with the following commands:
 
 > library(DEoptim)
 
-To install the software in R under the Linux operating system the following commands can be used:
+To install the software in R under the Linux operating system, please make sure that you have the libraries libxml2-dev and libcurl4-openssl-dev installed (additional libraries may be needed depending on the Linux version). Under Ubuntu 20.04 they can be installed by the following Linux command line:
+> sudo apt-get install libxml2-dev libcurl4-openssl-dev
+
+Then, "devtools" is needed into R, which can be installed by using the following command at the R console:
 
 > install.packages("devtools")
 
 > library(devtools)
+
+Then, hymodbluecat is installed into R with the command:
 
 > install_github("albertomontanari/hymodbluecat")
 
